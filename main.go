@@ -76,6 +76,11 @@ func main() {
 			Usage:  "Time for each JUnit list test.",
 			EnvVar: "PLUGIN_TEST_JUNIT_LIST_TIME",
 		},
+		cli.BoolFlag{
+			Name:   "fail_on_errors",
+			Usage:  "Fail the execution on errors.",
+			EnvVar: "PLUGIN_FAIL_ON_ERRORS",
+		},
 	}
 	app.Run(os.Args)
 }
@@ -99,6 +104,7 @@ func run(c *cli.Context) {
 		TestJUnitListTime:      c.String("test_junit_list_time"),
 		JsonFileName:           c.String("json_file_name"),
 		JsonContent:            c.String("json_content"),
+		FailOnFailure:          c.Bool("fail_on_errors"),
 	}
 
 	plugin := Plugin{Config: config}

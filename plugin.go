@@ -48,6 +48,7 @@ type (
 		TestJUnitListTime      string
 		JsonFileName           string
 		JsonContent            string
+		FailOnFailure          bool
 	}
 	Output struct {
 		OutputFile string // File where plugin output are saved
@@ -131,6 +132,20 @@ func (p *Plugin) Exec() error {
 	// Print the plugin config
 
 	fmt.Println("Plugin executed with config:", p.Config)
+
+	// Check if should fail on errors
+	if p.Config.FailOnFailure {
+		// verify if there are errors in Testsuites object
+		if junitReport.TestSuite[0].Errors > 0 {
+			fmt.Println("Fail on Error Setting is True")
+			fmt.Println("Error: There are errors in the JUnit report.")
+			return fmt.Errorf("Error: There are errors in the JUnit report.")
+		}
+
+	}
+
+	// Verify that the plugin works
+	fmt.Println("Plugin executed successfully!")
 
 	return nil
 }

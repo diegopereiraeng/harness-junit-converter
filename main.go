@@ -17,52 +17,64 @@ func main() {
 	app.Version = fmt.Sprintf("1.0.%s", build)
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name:  "json_file_name",
-			Usage: "Name of the JSON file.",
+			Name:   "json_file_name",
+			Usage:  "Name of the JSON file.",
+			EnvVar: "PLUGIN_JSON_FILE_NAME",
 		},
 		cli.StringFlag{
-			Name:  "json_content",
-			Usage: "Direct JSON content.",
+			Name:   "json_content",
+			Usage:  "Direct JSON content.",
+			EnvVar: "PLUGIN_JSON_CONTENT",
 		},
 		cli.StringFlag{
-			Name:  "test_name",
-			Usage: "Name of the test.",
+			Name:   "test_name",
+			Usage:  "Name of the test.",
+			EnvVar: "PLUGIN_TEST_NAME",
 		},
 		cli.StringFlag{
-			Name:  "test_description",
-			Usage: "Description of the test (optional).",
+			Name:   "test_description",
+			Usage:  "Description of the test (optional).",
+			EnvVar: "PLUGIN_TEST_DESCRIPTION",
 		},
 		cli.StringFlag{
-			Name:  "test_junit_time",
-			Usage: "JUnit time.",
+			Name:   "test_junit_time",
+			Usage:  "JUnit time.",
+			EnvVar: "PLUGIN_TEST_JUNIT_TIME",
 		},
 		cli.StringFlag{
-			Name:  "test_junit_package",
-			Usage: "JUnit package name.",
+			Name:   "test_junit_package",
+			Usage:  "JUnit package name.",
+			EnvVar: "PLUGIN_TEST_JUNIT_PACKAGE",
 		},
 		cli.StringFlag{
-			Name:  "test_junit_name",
-			Usage: "JUnit name.",
+			Name:   "test_junit_name",
+			Usage:  "JUnit name.",
+			EnvVar: "PLUGIN_TEST_JUNIT_NAME",
 		},
 		cli.StringSliceFlag{
-			Name:  "test_junit_list",
-			Usage: "List of JUnit tests.",
+			Name:   "test_junit_list",
+			Usage:  "List of JUnit tests.",
+			EnvVar: "PLUGIN_TEST_JUNIT_LIST",
 		},
 		cli.StringFlag{
-			Name:  "test_junit_list_name",
-			Usage: "Name for JUnit list.",
+			Name:   "test_junit_list_name",
+			Usage:  "Name for JUnit list.",
+			EnvVar: "PLUGIN_TEST_JUNIT_LIST_NAME",
 		},
 		cli.StringFlag{
-			Name:  "test_junit_list_class_name",
-			Usage: "Class name for JUnit list.",
+			Name:   "test_junit_list_class_name",
+			Usage:  "Class name for JUnit list.",
+			EnvVar: "PLUGIN_TEST_JUNIT_LIST_CLASS_NAME",
 		},
 		cli.StringFlag{
-			Name:  "test_junit_list_failure",
-			Usage: "Failure message for JUnit list.",
+			Name:   "test_junit_list_failure",
+			Usage:  "Failure message for JUnit list.",
+			EnvVar: "PLUGIN_TEST_JUNIT_LIST_FAILURE",
 		},
 		cli.StringFlag{
-			Name:  "test_junit_list_time",
-			Usage: "Time for each JUnit list test.",
+			Name:   "test_junit_list_time",
+			Usage:  "Time for each JUnit list test.",
+			EnvVar: "PLUGIN_TEST_JUNIT_LIST_TIME",
 		},
 	}
 	app.Run(os.Args)

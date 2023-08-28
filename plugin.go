@@ -122,6 +122,14 @@ func (p *Plugin) Exec() error {
 	}
 	fmt.Println(string(junitXML))
 
+	//save to a file called <test_name_variable>-junit.xml
+	err = ioutil.WriteFile(p.Config.TestName+"-junit.xml", junitXML, 0644)
+	if err != nil {
+		return fmt.Errorf("Error writing JUnit XML to file: %s", err)
+	}
+
+	// Print the plugin config
+
 	fmt.Println("Plugin executed with config:", p.Config)
 
 	return nil

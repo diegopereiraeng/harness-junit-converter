@@ -8,7 +8,7 @@ WORKDIR /app
 
 # Copy go files and go.mod to working directory
 COPY *.go ./
-COPY go.mod ./
+COPY go.mod go.sum ./
 
 # Fetch dependencies
 RUN go mod download

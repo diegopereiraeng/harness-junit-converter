@@ -114,7 +114,7 @@ func (p *Plugin) Exec() error {
 	}
 
 	// Parse JSON to JUnit
-	junitReport, err := ParseJunit(jsonContent)
+	junitReport, err := ParseJunit(jsonContent, p.Config)
 
 	// Serialize JUnit to XML and print (or write to file)
 	junitXML, err := xml.MarshalIndent(junitReport, " ", "  ")
@@ -150,7 +150,7 @@ func (p *Plugin) Exec() error {
 	return nil
 }
 
-func ParseJunit(jsonContent string) (*Testsuites, error) {
+func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 
 	// JUnit conversion logic
 	failed := 0
@@ -164,7 +164,11 @@ func ParseJunit(jsonContent string) (*Testsuites, error) {
 	json.Unmarshal([]byte(jsonContent), &result)
 
 	// Get the test suite name
-	testSuiteName := result["test_junit_name"].(string)
+	// testSuiteName := result["test_junit_name"].(string)
+	testSuiteName, ok := result[settings.TestJUnitName].(string)
+	if !ok {
+		testSuiteName = settings.TestJUnitName
+	}
 
 	// Get the test suite description
 	testSuiteDescription := result["test_junit_package"].(string)

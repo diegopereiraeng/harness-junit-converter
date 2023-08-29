@@ -32,6 +32,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
+	"strconv"
 )
 
 type (
@@ -171,13 +172,39 @@ func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 	}
 
 	// Get the test suite description
-	testSuiteDescription := result["test_junit_package"].(string)
+	// testSuiteDescription := result["test_junit_package"].(string)
+	testSuiteDescription, ok := result[settings.TestDescription].(string)
+	if !ok {
+		testSuiteDescription = settings.TestDescription
+	}
 
 	// Get the test suite time
-	testSuiteTime := int(result["test_junit_time"].(float64))
+	// testSuiteTime := int(result["test_junit_time"].(float64))
+
+	// Get the test suite time
+	testSuiteTime := 0
+	testSuiteTimeFloat, ok := result[settings.TestJUnitTime].(float64)
+	if ok {
+		testSuiteTime = int(testSuiteTimeFloat)
+	} else {
+		testSuiteTimeInt, ok := result[settings.TestJUnitTime].(int)
+		if ok {
+			testSuiteTime = testSuiteTimeInt
+		} else {
+			if settings.TestJUnitTime != "" {
+				testSuiteTimeInt, err := strconv.Atoi(settings.TestJUnitTime)
+				if err != nil {
+					return nil, fmt.Errorf("failed to parse TestJUnitTime as float64 or int")
+				}
+				testSuiteTime = testSuiteTimeInt
+			} else {
+				return nil, fmt.Errorf("failed to parse TestJUnitTime as float64 or int")
+			}
+		}
+	}
 
 	// Get the test suite list
-	testSuiteList := result["test_junit_list"].([]interface{})
+	testSuiteList := result[settings.TestJUnitListName].([]interface{})
 
 	// Create the testsuites object
 	testSuites := &Testsuites{}
@@ -193,10 +220,10 @@ func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 		total++ // Increment the total test cases count
 
 		testCaseMap := testCase.(map[string]interface{})
-		testCaseName := testCaseMap["test_junit_list_name"].(string)
-		testCaseClassName := testCaseMap["test_junit_list_class_name"].(string)
-		testCaseFailure := testCaseMap["test_junit_list_failure"].(string)
-		testCaseTime := int(testCaseMap["test_junit_list_time"].(float64))
+		testCaseName := testCaseMap[settings.TestJUnitListName].(string)
+		testCaseClassName := testCaseMap[settings.TestJUnitListClassName].(string)
+		testCaseFailure := testCaseMap[settings.TestJUnitListFailure].(string)
+		testCaseTime := int(testCaseMap[settings.TestJUnitListTime].(float64))
 
 		// Create the testcase object
 		testCaseObj := Testcase{

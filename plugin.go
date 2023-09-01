@@ -153,6 +153,9 @@ func (p *Plugin) Exec() error {
 
 func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 
+	// Add support to this json:
+	// [{"code":"DL3018","column":1,"file":"Dockerfile","level":"warning","line":4,"message":"Pin versions in apk add. Instead of `apk add <package>` use `apk add <package>=<version>`"},{"code":"DL3059","column":1,"file":"Dockerfile","level":"info","line":17,"message":"Multiple consecutive `RUN` instructions. Consider consolidation."}]
+
 	// JUnit conversion logic
 	failed := 0
 	total := 0 // Count for total test cases
@@ -163,6 +166,10 @@ func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 	// Parse the JSON content
 	var result map[string]interface{}
 	json.Unmarshal([]byte(jsonContent), &result)
+	var resultList []interface{}
+	json.Unmarshal([]byte(jsonContent), &resultList)
+
+	// fmt.Println("result", resultList)
 
 	// Get the test suite name
 	// testSuiteName := result["test_junit_name"].(string)
@@ -177,9 +184,6 @@ func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 	if !ok {
 		testSuiteDescription = settings.TestDescription
 	}
-
-	// Get the test suite time
-	// testSuiteTime := int(result["test_junit_time"].(float64))
 
 	// Get the test suite time
 	testSuiteTime := 0
@@ -203,10 +207,23 @@ func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 		}
 	}
 
-	// Get the test suite list
-	// testSuiteList := result["test_junit_list"].([]interface{})
-	testSuiteList := result[settings.TestJUnitList].([]interface{})
+	fmt.Println("Before list")
 
+	// Get the test suite list
+	var testSuiteList []interface{}
+	if settings.TestJUnitList != "." {
+		testSuiteListInterface, ok := result[settings.TestJUnitList].([]interface{})
+		if !ok {
+			return nil, fmt.Errorf("failed to parse TestJUnitList as []interface{}")
+		}
+		testSuiteList = testSuiteListInterface
+	} else {
+		testSuiteList = resultList
+	}
+
+	fmt.Println("After list")
+
+	fmt.Println("testSuiteList", testSuiteList)
 	// Create the testsuites object
 	testSuites := &Testsuites{}
 	testSuites.TestSuite = make([]Testsuite, 1)

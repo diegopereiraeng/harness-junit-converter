@@ -1,15 +1,18 @@
+
 # Harness JUnit Converter Plugin
 
-This plugin is designed to convert JSON fields to JUnit XML format in a Harness pipeline. It's built in Go and packaged as a Docker container for easy integration.
+This plugin is designed to convert JSON fields to the JUnit XML format, suitable for use within a Harness CI/CD pipeline. The plugin is built using Go and is packaged as a Docker container for effortless integration.
 
 ## How to Use This Plugin in a Harness Pipeline
 
-### Full Config Step Example
+### YAML Configuration Example
+
+Here is a full example of how to configure the plugin within a Harness pipeline:
 
 ```yaml
 type: Plugin
 spec:
-    connectorRef: <+input>
+    connectorRef: <Docker_Hub_Account_or_Other_Registry>
     image: your_docker_hub_username/harness-junit-converter:latest
     reports:
         type: JUnit
@@ -17,66 +20,58 @@ spec:
             paths:
               - "**/**/*.xml"
     settings:
-        json_file_name: <+input>
-        json_content: <+input>
-        test_name: <+input>
-        test_description: <+input>
-        test_junit_time: <+input>
-        test_junit_package: <+input>
-        test_junit_name: <+input>
-        test_junit_list: <+input>
-        test_junit_list_name: <+input>
-        test_junit_list_class_name: <+input>
-        test_junit_list_failure: <+input>
-        test_junit_list_time: <+input>
+        json_file_name: <Path_to_JSON_File>
+        json_content: <JSON_Content_As_String>
+        test_name: <JSON_Field_For_Test_Name>
+        test_description: <JSON_Field_For_Test_Description>
+        test_junit_time: <JSON_Field_For_JUnit_Time>
+        test_junit_package: <JSON_Field_For_JUnit_Package>
+        test_junit_name: <JSON_Field_For_JUnit_Name>
+        test_junit_list: <JSON_Field_For_JUnit_Test_List>
+        test_junit_list_name: <JSON_Field_For_Test_Case_Name>
+        test_junit_list_class_name: <JSON_Field_For_Test_Case_Class_Name>
+        test_junit_list_failure: <JSON_Field_For_Test_Case_Failure_Message>
+        test_junit_list_time: <JSON_Field_For_Test_Case_Time>
 ```
 
-The parameters in the `settings` section of the YAML file, except for `json_content` and `json_file_name`, act as JSON paths to map your JSON fields to JUnit fields. 
+### Parameters Explained
 
-### Example:
-Suppose you have the following JSON content:
+- `connectorRef`: Your Docker Hub account or other container registry.
+- `image`: The Docker image of the plugin, usually hosted on Docker Hub.
+- `json_file_name`: The path to the JSON file that will be converted to JUnit format. This is optional if `json_content` is provided.
+- `json_content`: The JSON content as a string that will be converted to JUnit format. This is optional if `json_file_name` is provided.
+- Other `settings`: These act as JSON paths that map your JSON fields to JUnit fields. For example, if your JSON has a field `myField` that you want to map to `test_name`, you would set `test_name: myField`.
 
-```json
-{
-  "field1": "field1",
-  "field2": "field2",
-  "field3": "field3",
-  "testList": [
-    {
-      "name": "test1",
-      "class": "whatIWant",
-      "time": 7
-    },
-    {
-      "name": "test2",
-      "class": "testClass",
-      "failure": "error msg"
-    }
-  ]
-}
-```
+### Additional Example
 
-To pass the value of `field1` as `test_name` in the YAML settings, you would write:
+Here is an additional example to provide more context on how to use the plugin:
 
 ```yaml
-test_name: field1
+type: Plugin
+spec:
+    connectorRef: MyDockerHubAccount
+    image: diegokoala/harness-junit-converter:latest
+    reports:
+        type: JUnit
+        spec:
+            paths:
+              - "target/**/test-*.xml"
+    settings:
+        json_content: '{"test_suite": "MySuite", "packageOrOtherThing": "value" "test_list": [{"name": "Test1", "class": "Class1", "time": 5}, {"name": "Test2", "class": "Class2", "failure": "failure msg"}]}'
+        test_name: "Custom Validation"
+        test_description: "Validate errors in the custom JSON"
+        test_junit_list: "test_list"
+        test_junit_list_name: "name"
+        test_junit_list_class_name: "class"
+        test_junit_list_time: "time"
+        test_junit_package: "packageOrOtherThing"
+        test_junit_name: "test_suite"
+        test_junit_list_failure: "test_junit_list_failure"
 ```
 
-To map the `testList` JSON array to `test_junit_list`, you would specify:
+### Another Additional Example
 
-```yaml
-test_junit_list: testList
-```
-
-For list attributes, the mapping is direct. For example, to map the `class` field in the JSON list to `test_junit_list_class_name`, you would write:
-
-```yaml
-test_junit_list_class_name: class
-```
-
-
-### JSON example
-
+Here is an another additional example to provide more context on how to use the plugin:
 ```
 {
   "test_junit_name": "MyTestSuite",
@@ -111,7 +106,7 @@ test_junit_list_class_name: class
 type: Plugin
 spec:
     connectorRef: <+input>
-    image: your_docker_hub_username/harness-junit-converter:latest
+    image: diegokoala/harness-junit-converter:latest
     reports:
         type: JUnit
         spec:
@@ -131,39 +126,36 @@ spec:
         test_junit_list_time: "test_junit_list_time"
 ```
 
-### Using this JSON example and running directly the plugin in command line
 
-```
-go get -u github.com/urfave/cli
-go get -u github.com/joho/godotenv
-go get -u github.com/pelletier/go-toml
-go get -u github.com/sirupsen/logrus
+
+### Running the Plugin Locally
+
+To test the plugin locally, you can build and run it using Go and Docker:
+
+```bash
+go mod download
 go build -o harness-junit-converter
-./harness-junit-converter --json_content='{"test_junit_name": "MyTestSuite", "test_junit_package": "com.example", "test_junit_time": 50, "test_junit_list": [{"test_junit_list_name": "TestCase1", "test_junit_list_class_name": "TestClass1", "test_junit_list_failure": "", "test_junit_list_time": 10}, {"test_junit_list_name": "TestCase2", "test_junit_list_class_name": "TestClass2", "test_junit_list_failure": "Some Failure", "test_junit_list_time": 15}, {"test_junit_list_name": "TestCase3", "test_junit_list_class_name": "TestClass3", "test_junit_list_failure": "", "test_junit_list_time": 25}]}'
+./harness-junit-converter --json_content='<Your_JSON_Content_Here>'
 ```
 
-## How to Build and Run the Plugin Locally
+To build and run the Docker container:
 
-1. Clone the repository and navigate to its directory.
-2. Build the Docker image:
+```bash
+docker build -t diegokoala/harness-junit-converter:latest .
+docker run -e PLUGIN_JSON_CONTENT='{"test_junit_name": "MyTestSuite", "test_junit_package": "com.example", "test_junit_time": 50, "test_junit_list": [{"test_junit_list_name": "TestCase1", "test_junit_list_class_name": "TestClass1", "test_junit_list_failure": "", "test_junit_list_time": 10}, {"test_junit_list_name": "TestCase2", "test_junit_list_class_name": "TestClass2", "test_junit_list_failure": "Some Failure", "test_junit_list_time": 15}, {"test_junit_list_name": "TestCase3", "test_junit_list_class_name": "TestClass3", "test_junit_list_failure": "", "test_junit_list_time": 25}]}' \
+           -e PLUGIN_TEST_NAME='test_junit_name' \
+           -e PLUGIN_TEST_DESCRIPTION='test_junit_package' \
+           -e PLUGIN_TEST_JUNIT_TIME='test_junit_time' \
+           -e PLUGIN_TEST_JUNIT_PACKAGE='test_junit_package' \
+           -e PLUGIN_TEST_JUNIT_NAME='test_junit_name' \
+           -e PLUGIN_TEST_JUNIT_LIST='test_junit_list' \
+           -e PLUGIN_TEST_JUNIT_LIST_NAME='test_junit_list_name' \
+           -e PLUGIN_TEST_JUNIT_LIST_CLASS_NAME='test_junit_list_class_name' \
+           -e PLUGIN_TEST_JUNIT_LIST_FAILURE='test_junit_list_failure' \
+           -e PLUGIN_TEST_JUNIT_LIST_TIME='test_junit_list_time' \
+           diegokoala/harness-junit-converter:latest
 
-    ```bash
-    docker build -t your_docker_hub_username/harness-junit-converter:latest .
-    ```
-
-3. Run the Docker container:
-
-    ```bash
-    docker run your_docker_hub_username/harness-junit-converter:latest
-    ```
-
-4. Push the Docker image to your Docker Hub:
-
-    ```bash
-    docker push your_docker_hub_username/harness-junit-converter:latest
-    ```
-
-For more details, please refer to the `Dockerfile` in the repository.
+```
 
 ## License
 
@@ -171,4 +163,4 @@ This project is licensed under the MIT License.
 
 ## Contributing
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+Pull requests are welcome. For significant changes, please open an issue first to discuss what you would like to change.

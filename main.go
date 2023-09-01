@@ -97,7 +97,7 @@ func run(c *cli.Context) {
 		TestJUnitTime:          c.String("test_junit_time"),
 		TestJUnitPackage:       c.String("test_junit_package"),
 		TestJUnitName:          c.String("test_junit_name"),
-		TestJUnitList:          c.StringSlice("test_junit_list"),
+		TestJUnitList:          c.String("test_junit_list"),
 		TestJUnitListName:      c.String("test_junit_list_name"),
 		TestJUnitListClassName: c.String("test_junit_list_class_name"),
 		TestJUnitListFailure:   c.String("test_junit_list_failure"),

@@ -42,7 +42,7 @@ type (
 		TestJUnitTime          string
 		TestJUnitPackage       string
 		TestJUnitName          string
-		TestJUnitList          []string
+		TestJUnitList          string
 		TestJUnitListName      string
 		TestJUnitListClassName string
 		TestJUnitListFailure   string
@@ -204,7 +204,8 @@ func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 	}
 
 	// Get the test suite list
-	testSuiteList := result[settings.TestJUnitListName].([]interface{})
+	// testSuiteList := result["test_junit_list"].([]interface{})
+	testSuiteList := result[settings.TestJUnitList].([]interface{})
 
 	// Create the testsuites object
 	testSuites := &Testsuites{}

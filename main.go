@@ -81,6 +81,16 @@ func main() {
 			Usage:  "Fail the execution on errors.",
 			EnvVar: "PLUGIN_FAIL_ON_ERRORS",
 		},
+		cli.BoolFlag{
+			Name:   "nested_json_list",
+			Usage:  "JSON list is nested",
+			EnvVar: "PLUGIN_NESTED_JSON_LIST",
+		},
+		cli.StringSliceFlag{
+			Name:   "test_junit_skip_field",
+			Usage:  "Skip fields in JUnit XML.",
+			EnvVar: "PLUGIN_TEST_JUNIT_SKIP_FIELD",
+		},
 	}
 	app.Run(os.Args)
 }
@@ -105,6 +115,8 @@ func run(c *cli.Context) {
 		JsonFileName:           c.String("json_file_name"),
 		JsonContent:            c.String("json_content"),
 		FailOnFailure:          c.Bool("fail_on_errors"),
+		NestedJsonList:         c.Bool("nested_json_list"),
+		TestJUnitSkipField:     c.String("test_junit_skip_field"),
 	}
 
 	plugin := Plugin{Config: config}

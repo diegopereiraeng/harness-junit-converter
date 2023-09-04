@@ -140,6 +140,26 @@ go get -u github.com/pelletier/go-toml
 go get -u github.com/sirupsen/logrus
 go build -o harness-junit-converter
 ./harness-junit-converter --json_content='{"test_junit_name": "MyTestSuite", "test_junit_package": "com.example", "test_junit_time": 50, "test_junit_list": [{"test_junit_list_name": "TestCase1", "test_junit_list_class_name": "TestClass1", "test_junit_list_failure": "", "test_junit_list_time": 10}, {"test_junit_list_name": "TestCase2", "test_junit_list_class_name": "TestClass2", "test_junit_list_failure": "Some Failure", "test_junit_list_time": 15}, {"test_junit_list_name": "TestCase3", "test_junit_list_class_name": "TestClass3", "test_junit_list_failure": "", "test_junit_list_time": 25}]}' --test_name="test" --test_description="desc" --test_junit_time="test_junit_time" --test_junit_package="test_junit_package" --test_junit_name="test_junit_name" --test_junit_list="test_junit_list" --test_junit_list_name="test_junit_list_name" --test_junit_list_class_name="test_junit_list_class_name" --test_junit_list_failure="test_junit_list_failure" --test_junit_list_time="test_junit_list_time"
+
+
+
+./harness-junit-converter --json_content='[{"code":"DL3018","column":1,"file":"Dockerfile","level":"warning","line":4,"message":"Pin versions in apk add. Instead of `apk add <package>` use `apk add <package>=<version>`"},{"code":"DL3059","column":1,"file":"Dockerfile","level":"info","line":17,"message":"Multiple consecutive `RUN` instructions. Consider consolidation."}]' --test_name="test" --test_description="desc" --test_junit_time="0" --test_junit_package="diego" --test_junit_name="diego-dev" --test_junit_list="." --test_junit_list_name="code" --test_junit_list_class_name="file" --test_junit_list_failure="message" --test_junit_list_time="line"
+
+
+./harness-junit-converter \
+  --json_file_name='tests/nested-json.json' \
+  --test_name="object_name" \
+  --test_description="file_name" \
+  --test_junit_time="file_row" \
+  --test_junit_package="file_name" \
+  --test_junit_name="object_name" \
+  --test_junit_list="checks" \
+  --test_junit_list_name="name" \
+  --test_junit_list_class_name="comment" \
+  --test_junit_list_failure="comments[].summary" \
+  --test_junit_list_time="grade" \
+  --nested_json_list=true \
+  --test_junit_skip_field="skipped
 ```
 
 ## How to Build and Run the Plugin Locally

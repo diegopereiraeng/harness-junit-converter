@@ -3,6 +3,77 @@
 
 This plugin is designed to convert JSON fields to the JUnit XML format, suitable for use within a Harness CI/CD pipeline. The plugin is built using Go and is packaged as a Docker container for effortless integration.
 
+## Parameters
+
+The tool accepts the following parameters:
+
+- **json_file_name**: Name of the JSON file.
+- **json_content**: Direct JSON content.
+- **test_name**: Name of the test.
+- **test_description**: Description of the test (optional).
+- **test_junit_time**: JUnit time.
+- **test_junit_package**: JUnit package name.
+- **test_junit_name**: JUnit name.
+- **test_junit_list**: Json Path to the test list.
+- **test_junit_list_name**: Name for JUnit list.
+- **test_junit_list_class_name**: Class name for JUnit list.
+- **test_junit_list_failure**: Failure message for JUnit list.
+- **test_junit_list_time**: Time for each JUnit list test.
+
+## Additional Parameters 
+
+- **test_junit_skip_field**: Json path to the field that would give true or false to skip errors.
+- **nested_json_list**: (true|false) If you have a nested json that is a list of a Test Suite, than use this option
+
+## JSON List Support
+
+e.g: [{"name": "value", "desc": "test2",...},{...}]
+
+- **test_junit_list**: use this one with value "."
+
+``` yaml
+test_junit_list = "."
+```
+
+## Nested JSon example
+
+Look the file in the repo tests/nested-json.json
+
+``` yaml
+nested_json_list = true
+```
+
+### Kube Score JSON Convert Example
+
+``` yaml
+step:
+  name: Kube Score Ingestion
+  identifier: kube_score
+  type: Plugin
+  spec:
+    connectorRef: <Docker_Registry>
+    image: diegokoala/harness-junit-converter:latest
+    reports:
+      type: JUnit
+      spec:
+        paths:
+          - "**/**/*.xml"
+    settings:
+      json_file_name: 'tests/nested-json.json'
+      test_name: "object_name"
+      test_description: "file_name"
+      test_junit_time: "file_row"
+      test_junit_package: "file_name"
+      test_junit_name: "object_name"
+      test_junit_list: "checks"
+      test_junit_list_name: "name"
+      test_junit_list_class_name: "comment"
+      test_junit_list_failure: "comments[].summary"
+      test_junit_list_time: "grade"
+      nested_json_list: true
+      test_junit_skip_field: "skipped"
+```
+
 ## How to Use This Plugin in a Harness Pipeline
 
 ### YAML Configuration Example
@@ -13,7 +84,7 @@ Here is a full example of how to configure the plugin within a Harness pipeline:
 type: Plugin
 spec:
     connectorRef: <Docker_Hub_Account_or_Other_Registry>
-    image: your_docker_hub_username/harness-junit-converter:latest
+    image: diegokoala/harness-junit-converter:latest
     reports:
         type: JUnit
         spec:

@@ -1,3 +1,4 @@
+# Go Lang image 1.21
 FROM golang:1.21-alpine as build
 
 # Install git for fetching dependencies

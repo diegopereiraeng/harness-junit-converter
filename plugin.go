@@ -355,6 +355,8 @@ func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 
 			// Iterate over the test cases
 
+			fmt.Println("len(testSuiteList): ", len(testSuiteList))
+
 			testCases := []Testcase{}
 
 			// Populate fields for a single test suite
@@ -365,6 +367,7 @@ func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 				Tests:   len(testSuiteList),
 			}
 
+			fmt.Println("len(testSuiteList): ", len(testSuiteList))
 			// Add test cases (assuming they are in a list for each object)
 			testCaseList := testCaseMap[settings.TestJUnitList].([]interface{})
 			for _, testCase := range testCaseList {
@@ -523,6 +526,11 @@ func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 
 			}
 
+			fmt.Println("errors: ", errors)
+			fmt.Println("newError: ", newError)
+			fmt.Println("failed: ", failed)
+			fmt.Println("total: ", total)
+			fmt.Println("testCases: ", testCases)
 			singleTestSuite.Errors = errors
 			singleTestSuite.TestCase = testCases
 
@@ -532,20 +540,54 @@ func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 		}
 	} else {
 		fmt.Println("NestedJsonList is false")
+		fmt.Println("Suite Name: ", testSuiteName)
 		testSuites.TestSuite[0].Name = testSuiteName
 		testSuites.TestSuite[0].Package = testSuiteDescription
 		testSuites.TestSuite[0].Time = testSuiteTime
 		testSuites.TestSuite[0].Tests = len(testSuiteList)
+
 		// Iterate over the test cases
 		for _, testCase := range testSuiteList {
 			total++ // Increment the total test cases count
-
+			fmt.Println("Case: ", testCase)
 			testCaseMap := testCase.(map[string]interface{})
 			testCaseName := testCaseMap[settings.TestJUnitListName].(string)
 			testCaseClassName := testCaseMap[settings.TestJUnitListClassName].(string)
-			testCaseFailure := testCaseMap[settings.TestJUnitListFailure].(string)
-			testCaseTime := int(testCaseMap[settings.TestJUnitListTime].(float64))
+			var testCaseFailure string
+			if tempFailure, ok := testCaseMap[settings.TestJUnitListFailure]; ok && tempFailure != nil {
+				testCaseFailure = testCaseMap[settings.TestJUnitListFailure].(string)
+			}
 
+			fmt.Println("settings.TestJUnitListTime: ", settings.TestJUnitListTime)
+			var testCaseTime int
+			// test if settings.TestJUnitListTime is a int or float64
+			timeInt, err := strconv.Atoi(settings.TestJUnitListTime)
+			fmt.Println("timeInt: ", timeInt)
+			if settings.TestJUnitListTime != "" {
+				if err == nil {
+					testCaseTime = timeInt
+				} else if tempTime, ok := testCaseMap[settings.TestJUnitListTime]; ok && tempTime != nil {
+					if timeFloat, ok := tempTime.(float64); ok {
+						testCaseTime = int(timeFloat)
+					} else {
+						testCaseTime = 0
+					}
+				} else {
+					fmt.Println("settings.TestJUnitListTime: ", settings.TestJUnitListTime)
+					fmt.Println("Convert to int")
+					// var err error
+					// conver checkMap[settings.TestJUnitListTime] to int
+					fmt.Println("settings.TestJUnitListTime: ", settings.TestJUnitListTime)
+					fmt.Println("checkMap[settings.TestJUnitListTime]: ", testCaseMap[settings.TestJUnitListTime])
+					if timeFloat, ok := tempTime.(int); ok {
+						testCaseTime = timeFloat
+					} else {
+						testCaseTime = 0
+					}
+				}
+			}
+			// testCaseTime = int(testCaseMap[settings.TestJUnitListTime].(float64))
+			fmt.Println("testCaseTime: ", testCaseTime)
 			// Create the testcase object
 			testCaseObj := Testcase{
 				Name:      testCaseName,

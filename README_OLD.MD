@@ -160,6 +160,8 @@ go build -o harness-junit-converter
   --test_junit_list_time="grade" \
   --nested_json_list=true \
   --test_junit_skip_field="skipped
+
+  ./harness-junit-converter --json_content='[{"name": "Area", "value": "sc"}, {"name": "Dominio", "value": "ged"}, {"name": "Produto", "value": "localiza-ged"}]' --test_name="test" --test_description="desc" --test_junit_time="0" --test_junit_package="diego" --test_junit_name="diego-dev" --test_junit_list="." --test_junit_list_name="name" --test_junit_list_class_name="value" --test_junit_list_failure="failure" --test_junit_list_time="0"
 ```
 
 ## How to Build and Run the Plugin Locally

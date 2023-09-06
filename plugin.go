@@ -50,6 +50,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -72,6 +73,7 @@ type (
 		FailOnFailure          bool
 		NestedJsonList         bool
 		TestJUnitSkipField     string
+		Status                 Status
 	}
 	Output struct {
 		OutputFile string // File where plugin output are saved
@@ -107,8 +109,57 @@ type Plugin struct {
 	Config Config
 }
 
+type Status struct {
+	Total  int
+	Passed int
+	Errors int
+	Score  float64
+}
+
+var status Status
+
+func printHeader() {
+	fmt.Println("|----------------------------------|")
+	fmt.Println("|  Harness JUnit Converter Plugin  |")
+	fmt.Println("|----------------------------------|")
+	fmt.Println("|     Developer: Diego Pereira     |")
+	fmt.Println("|----------------------------------|")
+	fmt.Println("|     Version: 1.0.0               |")
+	fmt.Println("|----------------------------------|")
+	fmt.Println("|     Date: 2021-09-01             |")
+	fmt.Println("|----------------------------------|")
+	fmt.Println("")
+	fmt.Println("")
+}
+
+func printStatusTable(status Status) {
+	fmt.Println("|----------------------------------|")
+	fmt.Println("|             Status               |")
+	fmt.Println("|----------------------------------|")
+	fmt.Printf("  Total:   %-3d                    \n", status.Total)
+	fmt.Printf("  Passed:  %-3d                    \n", status.Passed)
+	fmt.Printf("  Errors:  %-3d                    \n", status.Errors)
+	fmt.Println("|----------------------------------|")
+	fmt.Printf("  Score:   %-7.2f                 \n", status.Score)
+	fmt.Println("|----------------------------------|")
+}
+
+func exportMetricsToFile(status Status) {
+	file, err := os.Create("metrics.txt")
+	if err != nil {
+		log.Fatalf("Failed to create file: %s", err)
+	}
+	defer file.Close()
+
+	fmt.Fprintf(file, "TOTAL=%d\n", status.Total)
+	fmt.Fprintf(file, "PASSED=%d\n", status.Passed)
+	fmt.Fprintf(file, "ERRORS=%d\n", status.Errors)
+	fmt.Fprintf(file, "SCORE=%.2f\n", status.Score)
+}
+
 func (p *Plugin) Exec() error {
-	// The logic here would be similar to what was previously in the main's run function
+	printHeader()
+
 	// Read JSON, Convert to JUnit, and Export XML
 	if p.Config.JsonFileName != "" {
 		// Read the JSON file
@@ -148,7 +199,6 @@ func (p *Plugin) Exec() error {
 	if err != nil {
 		return fmt.Errorf("error marshaling JUnit to XML: %s", err)
 	}
-	fmt.Println(string(junitXML))
 
 	//save to a file called <test_name_variable>-junit.xml
 	err = os.WriteFile(p.Config.TestName+"-junit.xml", junitXML, 0644)
@@ -156,10 +206,41 @@ func (p *Plugin) Exec() error {
 		return fmt.Errorf("error writing JUnit XML to file: %s", err)
 	}
 
-	// Print the plugin config
+	// Print the plugin config parsed
 
-	fmt.Println("Plugin executed with config:", p.Config)
+	var configs []string
+	configs = append(configs, "TestName: "+p.Config.TestName)
+	configs = append(configs, "TestDescription: "+p.Config.TestDescription)
+	configs = append(configs, "TestJUnitTime: "+p.Config.TestJUnitTime)
+	configs = append(configs, "TestJUnitPackage: "+p.Config.TestJUnitPackage)
+	configs = append(configs, "TestJUnitName: "+p.Config.TestJUnitName)
+	configs = append(configs, "TestJUnitList: "+p.Config.TestJUnitList)
+	configs = append(configs, "TestJUnitListName: "+p.Config.TestJUnitListName)
+	configs = append(configs, "TestJUnitListClassName: "+p.Config.TestJUnitListClassName)
+	configs = append(configs, "TestJUnitListFailure: "+p.Config.TestJUnitListFailure)
+	configs = append(configs, "TestJUnitListTime: "+p.Config.TestJUnitListTime)
+	configs = append(configs, "JsonFileName: "+p.Config.JsonFileName)
+	configs = append(configs, "JsonContent: "+p.Config.JsonContent)
+	configs = append(configs, "FailOnFailure: "+strconv.FormatBool(p.Config.FailOnFailure))
+	configs = append(configs, "NestedJsonList: "+strconv.FormatBool(p.Config.NestedJsonList))
+	configs = append(configs, "TestJUnitSkipField: "+p.Config.TestJUnitSkipField)
 
+	fmt.Println("|---------------------------------------------------------------------------|")
+	fmt.Println("|                               Config                                      |")
+	fmt.Println("|---------------------------------------------------------------------------|")
+	for _, config := range configs {
+		// show the config name and value
+		fmt.Println("| " + config)
+
+	}
+	// fmt.Println("Plugin executed with config:", p.Config)
+	fmt.Println("|---------------------------------------------------------------------------|")
+	fmt.Println("|---------------------------------------------------------------------------|")
+	fmt.Println("|                               Results                                     |")
+	fmt.Println("|---------------------------------------------------------------------------|")
+	fmt.Println(string(junitXML))
+	fmt.Println("-----------------------------------------------------------------------------")
+	printStatusTable(status)
 	// Check if should fail on errors
 	if p.Config.FailOnFailure {
 		// verify if there are errors in Testsuites object
@@ -221,8 +302,8 @@ func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 			testSuiteTime = testSuiteTimeInt
 		} else {
 			if settings.TestJUnitTime != "" {
-				fmt.Println("TestJUnitTime is not empty")
-				fmt.Println("TestJUnitTime: ", settings.TestJUnitTime)
+				// fmt.Println("TestJUnitTime is not empty")
+				// fmt.Println("TestJUnitTime: ", settings.TestJUnitTime)
 				testSuiteTimeInt, err := strconv.Atoi(settings.TestJUnitTime)
 				if err != nil {
 					// return nil, fmt.Errorf("failed to parse TestJUnitTime as float64 or int")
@@ -262,18 +343,18 @@ func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 	testSuites := &Testsuites{}
 
 	// Create the
-	fmt.Println("len(testSuiteList): ", len(testSuiteList))
+	// fmt.Println("len(testSuiteList): ", len(testSuiteList))
 	if len(testSuiteList) > 0 && settings.NestedJsonList {
-		fmt.Println("len(testSuiteList) > 0 and NestedJsonList is true")
+		// fmt.Println("len(testSuiteList) > 0 and NestedJsonList is true")
 		testSuites.TestSuite = make([]Testsuite, len(testSuiteList))
 	} else {
-		fmt.Println("len(testSuiteList) <= 0 or NestedJsonList is false")
+		// fmt.Println("len(testSuiteList) <= 0 or NestedJsonList is false")
 		testSuites.TestSuite = make([]Testsuite, 1)
-		fmt.Println("len(testSuites.TestSuite): ", len(testSuites.TestSuite))
+		// fmt.Println("len(testSuites.TestSuite): ", len(testSuites.TestSuite))
 	}
 	// testSuites.TestSuite = make([]Testsuite, len(testSuiteList)+1)
-	fmt.Println("NestedJsonList: ", settings.NestedJsonList)
-	fmt.Println("len(testSuites.TestSuite): ", len(testSuites.TestSuite))
+	// fmt.Println("NestedJsonList: ", settings.NestedJsonList)
+	// fmt.Println("len(testSuites.TestSuite): ", len(testSuites.TestSuite))
 	if settings.NestedJsonList {
 		fmt.Println("NestedJsonList is true")
 		inc := 0
@@ -281,9 +362,7 @@ func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 		for _, testSuite := range testSuiteList {
 			// fmt.Println("TestSuite: ", testSuite)
 			total++ // Increment the total test cases count
-
 			testCaseMap := testSuite.(map[string]interface{})
-
 			testSuiteName, ok := testCaseMap[settings.TestJUnitName].(string)
 			if !ok || testSuiteName == "" {
 				testSuiteName = settings.TestJUnitName
@@ -526,11 +605,11 @@ func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 
 			}
 
-			fmt.Println("errors: ", errors)
-			fmt.Println("newError: ", newError)
-			fmt.Println("failed: ", failed)
-			fmt.Println("total: ", total)
-			fmt.Println("testCases: ", testCases)
+			// fmt.Println("errors: ", errors)
+			// fmt.Println("newError: ", newError)
+			// fmt.Println("failed: ", failed)
+			// fmt.Println("total: ", total)
+			// fmt.Println("testCases: ", testCases)
 			singleTestSuite.Errors = errors
 			singleTestSuite.TestCase = testCases
 
@@ -558,11 +637,11 @@ func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 				testCaseFailure = testCaseMap[settings.TestJUnitListFailure].(string)
 			}
 
-			fmt.Println("settings.TestJUnitListTime: ", settings.TestJUnitListTime)
+			// fmt.Println("settings.TestJUnitListTime: ", settings.TestJUnitListTime)
 			var testCaseTime int
 			// test if settings.TestJUnitListTime is a int or float64
 			timeInt, err := strconv.Atoi(settings.TestJUnitListTime)
-			fmt.Println("timeInt: ", timeInt)
+			// fmt.Println("timeInt: ", timeInt)
 			if settings.TestJUnitListTime != "" {
 				if err == nil {
 					testCaseTime = timeInt
@@ -587,7 +666,7 @@ func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 				}
 			}
 			// testCaseTime = int(testCaseMap[settings.TestJUnitListTime].(float64))
-			fmt.Println("testCaseTime: ", testCaseTime)
+			// fmt.Println("testCaseTime: ", testCaseTime)
 			// Create the testcase object
 			testCaseObj := Testcase{
 				Name:      testCaseName,
@@ -612,9 +691,13 @@ func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 		testSuites.TestSuite[0].TestCase = testCases
 
 		// Print or return the total and failed test cases count
-		fmt.Printf("Total test cases: %d\n", total)
-		fmt.Printf("Failed test cases: %d\n", failed)
+		// fmt.Printf("Total test cases: %d\n", total)
+		// fmt.Printf("Failed test cases: %d\n", failed)
 	}
+
+	status = Status{Total: total, Passed: total - failed, Errors: errors, Score: float64(total-failed) / float64(total) * 100}
+
+	// printStatusTable(Status{Total: total, Passed: total - failed, Errors: errors, Score: float64(total-failed) / float64(total) * 100})
 
 	return testSuites, nil
 }

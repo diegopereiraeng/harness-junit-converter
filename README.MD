@@ -20,7 +20,7 @@ The tool accepts the following parameters:
 - **test_junit_list_failure**: Failure message for JUnit list.
 - **test_junit_list_time**: Time for each JUnit list test.
 
-## Additional Parameters 
+## Additional Parameters
 
 - **test_junit_skip_field**: Json path to the field that would give true or false to skip errors.
 - **nested_json_list**: (true|false) If you have a nested json that is a list of a Test Suite, than use this option

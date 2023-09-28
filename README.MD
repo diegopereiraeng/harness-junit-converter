@@ -1,4 +1,3 @@
-
 # Harness JUnit Converter Plugin
 
 This plugin is designed to convert JSON fields to the JUnit XML format, suitable for use within a Harness CI/CD pipeline. The plugin is built using Go and is packaged as a Docker container for effortless integration.

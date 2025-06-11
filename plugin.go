@@ -173,7 +173,7 @@ func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 
 	// new—always safe, empty string if missing or non‐string
 	desc := ""
-	if v, ok := m[settings.TestDescription].(string); ok {
+	if v, ok := result[settings.TestDescription].(string); ok {
 	    desc = v
 	}
 

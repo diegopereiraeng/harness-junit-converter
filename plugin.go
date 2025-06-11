@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"strings"
 )
 
 type (
@@ -172,9 +171,10 @@ func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 		testSuiteName = settings.TestJUnitName
 	}
 
-	testSuiteDescription, ok := result[settings.TestDescription].(string)
-	if !ok {
-		testSuiteDescription = settings.TestDescription
+	// new—always safe, empty string if missing or non‐string
+	desc := ""
+	if v, ok := m[settings.TestDescription].(string); ok {
+	    desc = v
 	}
 
 	// compute suiteTime + fallback to 1

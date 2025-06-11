@@ -171,7 +171,7 @@ func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 		testSuiteName = settings.TestJUnitName
 	}
 
-	// new—always safe, empty string if missing or non‐string
+	// new — always empty if missing or wrong type
 	desc := ""
 	if v, ok := result[settings.TestDescription].(string); ok {
 	    desc = v
@@ -300,7 +300,7 @@ func ParseJunit(jsonContent string, settings Config) (*Testsuites, error) {
 		} else {
 			testSuites.TestSuite[0].Package = settings.TestJUnitPackage
 		}
-
+		testSuites.TestSuite[0].Package = desc
 		testSuites.TestSuite[0].Time = testSuiteTime
 		testSuites.TestSuite[0].Tests = len(testSuiteList)
 
